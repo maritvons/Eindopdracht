@@ -1,12 +1,13 @@
 var back, ground;
-var bgImg;
+var bgImg, coinImg;
 
 var mario;
 var mario_run, mario_jump, mario_gone;
 var ob1, ob2, ob3, ob4;
 
-var obG;
+var obG, coinG;
 var finish, gameover, endscreen;
+var coin;
 
 var PLAY = 1,
   END = 0;
@@ -22,6 +23,7 @@ function preload() {
 
   endscreen = loadImage("Img/Continue.png");
   bgImg = loadImage("Img/bg.png");
+  coinImg = loadImage("Img/coin.png");
   
   mario_run = loadAnimation("Img/run1.png", "Img/run2.png", "Img/run3.png");
   mario_jump = loadImage("Img/jump.png");
@@ -39,6 +41,7 @@ function setup() {
   mario = createSprite(60, 450, 10, 10);
 
   obG = new Group();
+  coinG = new Group();
 
   gameover = createSprite(400, 330, 10, 10)
   gameover.visible = false
@@ -64,7 +67,13 @@ function draw() {
 
   mario.velocityY = mario.velocityY + 0.5
   if (gameState === PLAY) {
-    score = Math.round(frameCount / 4)
+    for (i = 0; i < coinG.length; i++) {
+      if (mario.isTouching(coinG.get(i))) {
+      score = score + 1;
+      coinG.get(i).destroy();
+      }
+    }
+
     mario.collide(ground);
     mario.debug = false;
     if (mario.y >= 400) {
@@ -78,9 +87,10 @@ function draw() {
   
       mario.velocityY = -15
     }
-    back.velocityX = -(3.7 + score / 100)
-    if (frameCount % 150 === 0) {
+    back.velocityX = -(3.7 + (frameCount / 4) / 100)
+    if (frameCount % 140 === 0) {
         Obstacle();
+        Coins();
       }
     if (mario.isTouching(obG) || mario.y > ground.y) {
       gameState = END;
@@ -93,6 +103,7 @@ function draw() {
     obG.setLifetimeEach = -1
     
     obG.setVelocityEach(0, 0)
+    coinG.setVelocityEach(0, 0)
     back.velocityX = 0
     gameover.visible = true
     finish.visible = true
@@ -105,6 +116,7 @@ function draw() {
     if (mousePressedOver(gameover)) {
       Retry();
       frameCount = 0
+      score = 0
     }
   }
 
@@ -137,10 +149,22 @@ function Obstacle() {
     ob.y = 470
     ob.scale = 0.5
   }
-  ob.velocityX = -(4 + score / 100)
+  ob.velocityX = -(4 + (frameCount / 4) / 100)
   obG.add(ob)
   ob.debug = false
   ob.lifetime = 500
+}
+
+function Coins(){
+  if(frameCount % 140 === 0){
+    coin = createSprite(850, Math.round(random(210,260)));
+    coin.velocityX = -(4 + (frameCount / 4) / 100);
+    coin.lifetime = 700;
+    coin.addImage(coinImg)
+    coin.depth = mario.depth;
+    mario.depth = mario.depth+1;
+    coinG.add(coin);
+  }
 }
 
 function Retry() {
@@ -150,9 +174,10 @@ function Retry() {
 
   mario.changeAnimation("running1", mario_run)
   
-  back.velocityX = -(3.7 + score / 100)
+  back.velocityX = -(3.7 + (frameCount / 4) / 100)
   obG.destroyEach();
   obG.setLifetimeEach = 700
+  coinG.destroyEach();
   gameover.visible = false
   finish.visible = false
 }
