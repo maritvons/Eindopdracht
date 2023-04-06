@@ -1,8 +1,14 @@
 var back, ground;
-var bI1
+var bgImg;
+
+var mario;
+var mario_run, mario_jump, mario_gone;
 
 function preload() {
-  bI1 = loadImage("Img/bg.png")
+  bgImg = loadImage("Img/bg.png");
+  mario_run = loadAnimation("Img/run1.png", "Img/run2.png", "Img/run3.png");
+  mario_jump = loadImage("Img/jump.png");
+  mario_gone = loadAnimation("Img/end.png");
 }
 
 function setup() {
@@ -12,9 +18,36 @@ function setup() {
 
   ground = createSprite(400, 510, 900, 10)
   ground.visible = false
+
+  mario = createSprite(60, 450, 10, 10);
+
+  back.addImage(bgImg)
+  back.scale = 1.575
+  back.y = 280
+  mario.addAnimation("running1", mario_run)
+  mario.addAnimation("gone1", mario_gone)
+  mario.addAnimation("jumping1", mario_jump)
+  mario.scale = 0.75
 }
 
 function draw() {
   background(255)
-  image(bI1, 0, 0);
+
+  drawSprites();
+
+  mario.velocityY = mario.velocityY + 0.5
+
+  mario.collide(ground);
+  mario.debug = false;
+  if (mario.y >= 400) {
+    mario.changeAnimation("running1", mario_run);
+  }
+  if (back.x < 250) {
+    back.x = 600
+  }
+  if ((keyDown("up") && mario.y >= 400) || (keyDown("space") && mario.y >= 400)) {
+    mario.changeAnimation("jumping1", mario_jump)
+
+    mario.velocityY = -15
+  }
 }
