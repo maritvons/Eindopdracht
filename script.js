@@ -96,11 +96,21 @@ function draw() {
     back.velocityX = 0
     gameover.visible = true
     finish.visible = true
+    
+    fill(0)
+    textSize(14)
+    textAlign(CENTER);
+    text('Click to start', 400, 390);
+
+    if (mousePressedOver(gameover)) {
+      Retry();
+      frameCount = 0
+    }
   }
 
   fill(0)
   textSize(20)
-  text("Score=" + score, 30, 45)
+  text("Score = " + score, 30, 45)
 }
 
 function Obstacle() {
@@ -131,4 +141,18 @@ function Obstacle() {
   obG.add(ob)
   ob.debug = false
   ob.lifetime = 500
+}
+
+function Retry() {
+  gameState = PLAY
+  mario.x = 60
+  mario.y = 350
+
+  mario.changeAnimation("running1", mario_run)
+  
+  back.velocityX = -(3.7 + score / 100)
+  obG.destroyEach();
+  obG.setLifetimeEach = 700
+  gameover.visible = false
+  finish.visible = false
 }
