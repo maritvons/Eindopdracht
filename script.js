@@ -4,6 +4,8 @@ var bgImg;
 var mario;
 var mario_run, mario_jump, mario_gone;
 
+var score = 0;
+
 function preload() {
   bgImg = loadImage("Img/bg.png");
   mario_run = loadAnimation("Img/run1.png", "Img/run2.png", "Img/run3.png");
@@ -37,6 +39,7 @@ function draw() {
 
   mario.velocityY = mario.velocityY + 0.5
 
+  score = Math.round(frameCount / 4)
   mario.collide(ground);
   mario.debug = false;
   if (mario.y >= 400) {
@@ -50,4 +53,9 @@ function draw() {
 
     mario.velocityY = -15
   }
+  back.velocityX = -(3.7 + score / 100)
+
+  fill(0)
+  textSize(20)
+  text("Score=" + score, 30, 45)
 }
