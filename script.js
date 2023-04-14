@@ -12,6 +12,8 @@ var coin;
 localStorage["hs"] = 0
 var hs = localStorage["hs"]
 
+var run, speed, game, collect;
+
 var gameState = 0;
 
 var score = 0;
@@ -28,6 +30,11 @@ function preload() {
   hillImg = loadImage("Img/hill.png");
   cloudImg = loadImage("Img/cloud.png");
   endscreen = loadImage("Img/Continue.png");
+
+  run = loadSound("Sound/run.mp3")
+  speed = loadSound("Sound/speed.mp3")
+  game = loadSound("Sound/game.mp3")
+  collect = loadSound("Sound/collect.mp3")
   
   mario_run = loadAnimation("Img/run1.png", "Img/run2.png", "Img/run3.png");
   mario_jump = loadImage("Img/jump.png");
@@ -103,6 +110,7 @@ function Startscreen() {
     gameState = 1
     frameCount = 0
     start.visible = false
+    run.play();
   }
 }
 
@@ -113,6 +121,7 @@ function Game() {
   for (i = 0; i < coinG.length; i++) {
     if (mario.isTouching(coinG.get(i))) {
     score = score + 1;
+    collect.play()
     coinG.get(i).destroy();
     }
   }
@@ -136,12 +145,18 @@ function Game() {
     Obstacle();
     Coins();
   }
+  if (frameCount === 2000) {
+    run.stop();
+    speed.play();
+    speed.loop();
+  }
   if (mario.isTouching(obG) || mario.y > ground.y) {
     gameState = 2;
     mario.y = 350
     mario.velocityY =  9.5
 
     mario.changeAnimation("gone1", mario_gone)
+    game.play();
   }
 }
 
@@ -157,11 +172,14 @@ function Endscreen() {
   back.velocityX = 0
   gameover.visible = true
   finish.visible = true
+
+  run.stop();
+  speed.stop();
     
   fill(0)
   textSize(14)
   textAlign(CENTER);
-  text('Click to start', 400, 390);
+  text('Click on Mario to start', 400, 380);
 
   if (mousePressedOver(gameover)) {
     Retry();
@@ -247,6 +265,7 @@ function Retry() {
   mario.y = 350
 
   mario.changeAnimation("running1", mario_run)
+  run.play()
   
   back.velocityX = -(3.7 + (frameCount / 4) / 100)
   obG.destroyEach();
