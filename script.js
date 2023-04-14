@@ -6,12 +6,13 @@ var mario_run, mario_jump, mario_gone;
 var ob1, ob2, ob3, ob4;
 
 var obG, coinG;
+var start;
 var finish, gameover, endscreen;
 var coin;
 
-var PLAY = 1,
-  END = 0;
-var gameState = PLAY;
+//var PLAY = 1,
+  //END = 0;
+var gameState = 0;
 
 var score = 0;
 
@@ -21,6 +22,7 @@ function preload() {
   ob3 = loadImage("Img/ob3.png");
   ob4 = loadImage("Img/ob4.png");
 
+  startscreen = loadImage("Img/Start.png");
   endscreen = loadImage("Img/Continue.png");
   bgImg = loadImage("Img/bg.png");
   coinImg = loadImage("Img/coin.png");
@@ -38,7 +40,10 @@ function setup() {
   ground = createSprite(400, 510, 900, 10)
   ground.visible = false
 
-  mario = createSprite(60, 450, 10, 10);
+  start = createSprite(400, 300, 10, 10)
+  start.addAnimation("dash", startscreen)
+
+  mario = createSprite(150, 450, 10, 10);
 
   obG = new Group();
   coinG = new Group();
@@ -57,6 +62,7 @@ function setup() {
   mario.addAnimation("gone1", mario_gone)
   mario.addAnimation("jumping1", mario_jump)
   mario.scale = 0.75
+  //mario.visible = false
   gameover.addAnimation("gone1", mario_gone)
 }
 
@@ -65,64 +71,92 @@ function draw() {
 
   drawSprites();
 
-  mario.velocityY = mario.velocityY + 0.5
-  if (gameState === PLAY) {
-    for (i = 0; i < coinG.length; i++) {
-      if (mario.isTouching(coinG.get(i))) {
-      score = score + 1;
-      coinG.get(i).destroy();
-      }
-    }
-
-    mario.collide(ground);
-    mario.debug = false;
-    if (mario.y >= 400) {
-      mario.changeAnimation("running1", mario_run);
-    }
-    if (back.x < 250) {
-      back.x = 600
-    }
-    if ((keyDown("up") && mario.y >= 400) || (keyDown("space") && mario.y >= 400)) {
-      mario.changeAnimation("jumping1", mario_jump)
-  
-      mario.velocityY = -15
-    }
-    back.velocityX = -(3.7 + (frameCount / 4) / 100)
-    if (frameCount % 140 === 0) {
-        Obstacle();
-        Coins();
-      }
-    if (mario.isTouching(obG) || mario.y > ground.y) {
-      gameState = END;
-      mario.y = 350
-
-      mario.changeAnimation("gone1", mario_gone)
-    }
+  if (gameState == 0) {
+    Startscreen()
   }
-  if (gameState === END) {
-    obG.setLifetimeEach = -1
-    
-    obG.setVelocityEach(0, 0)
-    coinG.setVelocityEach(0, 0)
-    back.velocityX = 0
-    gameover.visible = true
-    finish.visible = true
-    
-    fill(0)
-    textSize(14)
-    textAlign(CENTER);
-    text('Click to start', 400, 390);
-
-    if (mousePressedOver(gameover)) {
-      Retry();
-      frameCount = 0
-      score = 0
-    }
+  if (gameState == 1) {
+    Game()
+  }
+  if (gameState == 2) {
+    Endscreen()
   }
 
   fill(0)
   textSize(20)
   text("Score = " + score, 30, 45)
+}
+
+function Startscreen() {
+  mario.visible = false
+  
+  fill(0)
+  textSize(14)
+  textAlign(CENTER);
+  text('Click to start', 400, 360);
+  
+  if (mousePressedOver(start)) {
+    gameState = 1
+    frameCount = 0
+    start.visible = false
+  }
+}
+
+function Game() {
+  mario.velocityY = mario.velocityY + 0.5
+  
+  for (i = 0; i < coinG.length; i++) {
+    if (mario.isTouching(coinG.get(i))) {
+    score = score + 1;
+    coinG.get(i).destroy();
+    }
+  }
+
+  mario.collide(ground);
+  mario.debug = false;
+  if (mario.y >= 400) {
+    mario.changeAnimation("running1", mario_run);
+  }
+  if (back.x < 250) {
+    back.x = 600
+  }
+  if ((keyDown("up") && mario.y >= 400) || (keyDown("space") && mario.y >= 400)) {
+    mario.changeAnimation("jumping1", mario_jump)
+  
+    mario.velocityY = -15
+  }
+  back.velocityX = -(3.7 + (frameCount / 4) / 100)
+  if (frameCount % 140 === 0) {
+    Obstacle();
+    Coins();
+  }
+  if (mario.isTouching(obG) || mario.y > ground.y) {
+    gameState = 2;
+    mario.y = 350
+    mario.velocityY =  9.5
+
+    mario.changeAnimation("gone1", mario_gone)
+  }
+}
+
+function Endscreen() {
+  obG.setLifetimeEach = -1
+    
+  obG.setVelocityEach(0, 0)
+  coinG.setVelocityEach(0, 0)
+  back.velocityX = 0
+  gameover.visible = true
+  finish.visible = true
+    
+  fill(0)
+  textSize(14)
+  textAlign(CENTER);
+  text('Click to start', 400, 390);
+
+  if (mousePressedOver(gameover)) {
+    Retry();
+    frameCount = 0
+    score = 0
+  }
 }
 
 function Obstacle() {
@@ -168,8 +202,8 @@ function Coins(){
 }
 
 function Retry() {
-  gameState = PLAY
-  mario.x = 60
+  gameState = 1
+  mario.x = 150
   mario.y = 350
 
   mario.changeAnimation("running1", mario_run)
