@@ -3,7 +3,10 @@ var bgImg, coinImg, cloudImg, hillImg;
 
 var mario;
 var mario_run, mario_jump, mario_gone;
+var luigi;
+var luigi_run, luigi_jump, luigi_gone;
 var ob1, ob2, ob3, ob4;
+var character;
 
 var obG, coinG, cloudG, hillG;
 var start, startscreen;
@@ -25,6 +28,7 @@ function preload() {
   ob4 = loadImage("Img/ob4.png");
 
   startscreen = loadImage("Img/Start.png");
+  players = loadImage("Img/mario:luigi.png");
   bgImg = loadImage("Img/bg.png");
   coinImg = loadImage("Img/coin.png");
   hillImg = loadImage("Img/hill.png");
@@ -35,10 +39,14 @@ function preload() {
   speed = loadSound("Sound/speed.mp3")
   game = loadSound("Sound/game.mp3")
   collect = loadSound("Sound/collect.mp3")
-  
+
   mario_run = loadAnimation("Img/run1.png", "Img/run2.png", "Img/run3.png");
   mario_jump = loadImage("Img/jump.png");
   mario_gone = loadAnimation("Img/end.png");
+
+  luigi_run = loadAnimation("Img/luigi_run1.png", "Img/luigi_run2.png", "Img/luigi_run3.png");
+  luigi_jump = loadImage("Img/luigi_jump.png");
+  luigi_gone = loadAnimation("Img/luigi_end.png");
 }
 
 function setup() {
@@ -52,15 +60,20 @@ function setup() {
   start = createSprite(400, 300, 10, 10)
   start.addAnimation("dash", startscreen)
 
-  mario = createSprite(150, 450, 10, 10);
-
+  player = createSprite(400, 300, 10, 10)
+  player.addAnimation("dash", players)
+  player.scale = 0.6
+  player.visible = false
+  
   obG = new Group();
   coinG = new Group();
   hillG = new Group();
   cloudG = new Group();
 
-  gameover = createSprite(400, 330, 10, 10)
-  gameover.visible = false
+  m_gameover = createSprite(400, 330, 10, 10)
+  m_gameover.visible = false
+  l_gameover = createSprite(400, 330, 10, 10)
+  l_gameover.visible = false
 
   finish = createSprite(400, 230, 10, 10)
   finish.addAnimation("dash", endscreen)
@@ -69,11 +82,20 @@ function setup() {
   back.addImage(bgImg)
   back.scale = 1.575
   back.y = 280
-  mario.addAnimation("running1", mario_run)
-  mario.addAnimation("gone1", mario_gone)
-  mario.addAnimation("jumping1", mario_jump)
-  mario.scale = 0.75
-  gameover.addAnimation("gone1", mario_gone)
+
+    mario = createSprite(150, 450, 10, 10);
+    mario.addAnimation("running1", mario_run)
+    mario.addAnimation("gone1", mario_gone)
+    mario.addAnimation("jumping1", mario_jump)
+    mario.scale = 0.75
+    m_gameover.addAnimation("gone1", mario_gone)
+
+    luigi = createSprite(150, 450, 10, 10);
+    luigi.addAnimation("running2", luigi_run)
+    luigi.addAnimation("gone2", luigi_gone)
+    luigi.addAnimation("jumping2", luigi_jump)
+    luigi.scale = 0.75
+    l_gameover.addAnimation("gone2", luigi_gone)
 }
 
 function draw() {
@@ -81,13 +103,16 @@ function draw() {
 
   drawSprites();
 
-  if (gameState == 0) {
+  if (gameState === 0) {
     Startscreen()
   }
-  if (gameState == 1) {
+  if (gameState === 1) {
+    Character()
+  }
+  if (gameState === 2) {
     Game()
   }
-  if (gameState == 2) {
+  if (gameState === 3) {
     Endscreen()
   }
 
@@ -100,6 +125,7 @@ function draw() {
 
 function Startscreen() {
   mario.visible = false
+  luigi.visible = false
   
   fill(0)
   textSize(14)
@@ -108,37 +134,24 @@ function Startscreen() {
   
   if (mousePressedOver(start)) {
     gameState = 1
-    frameCount = 0
-    start.visible = false
-    run.play();
   }
 }
 
-function Game() {
-  mario.visible = true
-  mario.velocityY = mario.velocityY + 0.5
+function Character() {
+  start.visible = false
+  player.visible = true
+    
+  fill(0)
+  textSize(50)
+  textAlign(CENTER)
+  text("Choose character:" , 400, 200) 
+  textSize(16)
+  text("Press 'M' for Mario or press 'L' for Luigi", 400, 235)
   
-  for (i = 0; i < coinG.length; i++) {
-    if (mario.isTouching(coinG.get(i))) {
-    score = score + 1;
-    collect.play()
-    coinG.get(i).destroy();
-    }
-  }
+  keyPressed()
+}
 
-  mario.collide(ground);
-  mario.debug = false;
-  if (mario.y >= 400) {
-    mario.changeAnimation("running1", mario_run);
-  }
-  if (back.x < 250) {
-    back.x = 600
-  }
-  if ((keyDown("up") && mario.y >= 400) || (keyDown("space") && mario.y >= 400)) {
-    mario.changeAnimation("jumping1", mario_jump)
-  
-    mario.velocityY = -15
-  }
+function Game() {
   back.velocityX = -(3.7 + (frameCount / 4) / 100)
   if (frameCount % 140 === 0) {
     Backg();
@@ -150,13 +163,75 @@ function Game() {
     speed.play();
     speed.loop();
   }
-  if (mario.isTouching(obG) || mario.y > ground.y) {
-    gameState = 2;
-    mario.y = 350
-    mario.velocityY =  9.5
-
-    mario.changeAnimation("gone1", mario_gone)
-    game.play();
+  
+  if (character === 1) {
+    mario.visible = true
+    mario.velocityY = mario.velocityY + 0.5
+    
+    for (i = 0; i < coinG.length; i++) {
+      if (mario.isTouching(coinG.get(i))) {
+      score = score + 1;
+      collect.play()
+      coinG.get(i).destroy();
+      }
+    }
+  
+    mario.collide(ground);
+    mario.debug = false;
+    if (mario.y >= 400) {
+      mario.changeAnimation("running1", mario_run);
+    }
+    if (back.x < 250) {
+      back.x = 600
+    }
+    if ((keyDown("up") && mario.y >= 400) || (keyDown("space") && mario.y >= 400)) {
+      mario.changeAnimation("jumping1", mario_jump)
+    
+      mario.velocityY = -15
+    }
+    if (mario.isTouching(obG) || mario.y > ground.y) {
+      gameState = 3;
+      mario.y = 350
+      mario.velocityY =  9.5
+  
+      mario.changeAnimation("gone1", mario_gone)
+      game.play();
+    }
+  }
+  
+  if (character === 2) {
+    luigi.visible = true
+    luigi.velocityY = luigi.velocityY + 0.5
+    
+    for (i = 0; i < coinG.length; i++) {
+      if (luigi.isTouching(coinG.get(i))) {
+      score = score + 1;
+      collect.play()
+      coinG.get(i).destroy();
+      }
+    }
+  
+    luigi.collide(ground);
+    luigi.debug = false;
+    if (luigi.y >= 400) {
+      luigi.changeAnimation("running2", luigi_run);
+    }
+    if (back.x < 250) {
+      back.x = 600
+    }
+    if ((keyDown("up") && luigi.y >= 400) || (keyDown("space") && luigi.y >= 400)) {
+      luigi.changeAnimation("jumping2", luigi_jump)
+    
+      luigi.velocityY = -15
+    }
+    if (luigi.isTouching(obG) || luigi.y > ground.y) {
+      gameState = 3;
+      luigi.y = 350
+      luigi.velocityY =  9.5
+  
+      luigi.changeAnimation("gone2", luigi_gone)
+      game.play();
+    }
   }
 }
 
@@ -170,21 +245,42 @@ function Endscreen() {
   hillG.setVelocityEach(0, 0)
   cloudG.setVelocityEach(0, 0)
   back.velocityX = 0
-  gameover.visible = true
   finish.visible = true
 
   run.stop();
   speed.stop();
+  
+  if (character === 1) {
+    m_gameover.visible = true
     
-  fill(0)
-  textSize(14)
-  textAlign(CENTER);
-  text('Click on Mario to start', 400, 380);
+    fill(0)
+    textSize(14)
+    textAlign(CENTER);
+    text('Click on Mario to start', 400, 380);
 
-  if (mousePressedOver(gameover)) {
-    Retry();
-    frameCount = 0
-    score = 0
+    if (mousePressedOver(m_gameover)) {
+      finish.visible = false
+      run.play()
+      Retry();
+      frameCount = 0
+      score = 0
+    }
+  }
+  if (character === 2) {
+    l_gameover.visible = true
+
+    fill(0)
+    textSize(14)
+    textAlign(CENTER);
+    text('Click on Luigi to start', 400, 380);
+
+    if (mousePressedOver(l_gameover)) {
+      finish.visible = false
+      run.play()
+      Retry();
+      frameCount = 0
+      score = 0
+    }
   }
 }
 
@@ -260,12 +356,21 @@ function Coins(){
 }
 
 function Retry() {
-  gameState = 1
-  mario.x = 150
-  mario.y = 350
-
-  mario.changeAnimation("running1", mario_run)
+  gameState = 2
   run.play()
+  
+  if (character === 1) {
+    mario.x = 150
+    mario.y = 350
+    mario.changeAnimation("running1", mario_run)
+    m_gameover.visible = false
+  }
+  if (character === 2) {
+    luigi.x = 150
+    luigi.y = 350
+    luigi.changeAnimation("running2", luigi_run)
+    l_gameover.visible = false
+  }
   
   back.velocityX = -(3.7 + (frameCount / 4) / 100)
   obG.destroyEach();
@@ -276,11 +381,23 @@ function Retry() {
   hillG.setLifetimeEach = 700
   cloudG.destroyEach();
   cloudG.setLifetimeEach = 700
-  
-  gameover.visible = false
-  finish.visible = false
 
   if (hs < score) {
     hs = score;
+  }
+}
+
+function keyPressed() {
+  if (key === 'm') {
+    character = 1;
+    gameState = 2;
+    run.play()
+    player.visible = false
+  }
+  if (key === 'l') {
+    character = 2;
+    gameState = 2;
+    run.play()
+    player.visible = false
   }
 }
