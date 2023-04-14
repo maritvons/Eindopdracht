@@ -6,12 +6,12 @@ var mario_run, mario_jump, mario_gone;
 var ob1, ob2, ob3, ob4;
 
 var obG, coinG;
-var start;
+var start, startscreen;
 var finish, gameover, endscreen;
 var coin;
+localStorage["hs"] = 0
+var hs = localStorage["hs"]
 
-//var PLAY = 1,
-  //END = 0;
 var gameState = 0;
 
 var score = 0;
@@ -62,7 +62,6 @@ function setup() {
   mario.addAnimation("gone1", mario_gone)
   mario.addAnimation("jumping1", mario_jump)
   mario.scale = 0.75
-  //mario.visible = false
   gameover.addAnimation("gone1", mario_gone)
 }
 
@@ -83,7 +82,9 @@ function draw() {
 
   fill(0)
   textSize(20)
+  textAlign(LEFT)
   text("Score = " + score, 30, 45)
+  text("Highscore = " + hs, 30, 77)
 }
 
 function Startscreen() {
@@ -102,6 +103,7 @@ function Startscreen() {
 }
 
 function Game() {
+  mario.visible = true
   mario.velocityY = mario.velocityY + 0.5
   
   for (i = 0; i < coinG.length; i++) {
@@ -214,4 +216,8 @@ function Retry() {
   coinG.destroyEach();
   gameover.visible = false
   finish.visible = false
+
+  if (hs < score) {
+    hs = score;
+  }
 }
