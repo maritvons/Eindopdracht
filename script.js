@@ -1,11 +1,11 @@
 var back, ground;
-var bgImg, coinImg;
+var bgImg, coinImg, cloudImg, hillImg;
 
 var mario;
 var mario_run, mario_jump, mario_gone;
 var ob1, ob2, ob3, ob4;
 
-var obG, coinG;
+var obG, coinG, cloudG, hillG;
 var start, startscreen;
 var finish, gameover, endscreen;
 var coin;
@@ -23,9 +23,11 @@ function preload() {
   ob4 = loadImage("Img/ob4.png");
 
   startscreen = loadImage("Img/Start.png");
-  endscreen = loadImage("Img/Continue.png");
   bgImg = loadImage("Img/bg.png");
   coinImg = loadImage("Img/coin.png");
+  hillImg = loadImage("Img/hill.png");
+  cloudImg = loadImage("Img/cloud.png");
+  endscreen = loadImage("Img/Continue.png");
   
   mario_run = loadAnimation("Img/run1.png", "Img/run2.png", "Img/run3.png");
   mario_jump = loadImage("Img/jump.png");
@@ -47,6 +49,8 @@ function setup() {
 
   obG = new Group();
   coinG = new Group();
+  hillG = new Group();
+  cloudG = new Group();
 
   gameover = createSprite(400, 330, 10, 10)
   gameover.visible = false
@@ -128,6 +132,7 @@ function Game() {
   }
   back.velocityX = -(3.7 + (frameCount / 4) / 100)
   if (frameCount % 140 === 0) {
+    Backg();
     Obstacle();
     Coins();
   }
@@ -142,9 +147,13 @@ function Game() {
 
 function Endscreen() {
   obG.setLifetimeEach = -1
+  cloudG.setLifetimeEach = -1
+  hillG.setLifetimeEach = -1
     
   obG.setVelocityEach(0, 0)
   coinG.setVelocityEach(0, 0)
+  hillG.setVelocityEach(0, 0)
+  cloudG.setVelocityEach(0, 0)
   back.velocityX = 0
   gameover.visible = true
   finish.visible = true
@@ -158,6 +167,35 @@ function Endscreen() {
     Retry();
     frameCount = 0
     score = 0
+  }
+}
+
+function Backg() {
+  var rand = Math.round(random(1, 2))
+  var ran = random(245, 100)
+  if (rand === 1) {
+    hill = createSprite(1000, 433, 10, 10)
+    hill.velocityX = -(4 + (frameCount / 4) / 100)
+    
+    hill.addImage(hillImg)
+
+    hill.scale = 3
+
+    hill.lifetime = 700
+    hill.depth = mario.depth - 1
+    hillG.add(hill)
+  } 
+  else if (rand === 2) {
+    cloud = createSprite(1150, ran, 10, 10);
+    
+    cloud.addImage(cloudImg);
+    cloud.scale = 1.5
+    
+    cloud.velocityX = -(4 + (frameCount / 4) / 100)
+    cloud.lifetime = 700
+
+    cloud.depth = mario.depth - 1
+    cloudG.add(cloud)
   }
 }
 
@@ -214,6 +252,12 @@ function Retry() {
   obG.destroyEach();
   obG.setLifetimeEach = 700
   coinG.destroyEach();
+  
+  hillG.destroyEach();
+  hillG.setLifetimeEach = 700
+  cloudG.destroyEach();
+  cloudG.setLifetimeEach = 700
+  
   gameover.visible = false
   finish.visible = false
 
